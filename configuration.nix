@@ -175,6 +175,7 @@
     extraGroups = [ "wheel" "networkmanager" "audio" "video" ];
     password = "dev";
     shell = pkgs.zsh;
+    ignoreShellProgramCheck = true;  # ZSH configured via Home Manager
   };
 
   # NOTE: All dotfile management moved to Home Manager (home.nix)
