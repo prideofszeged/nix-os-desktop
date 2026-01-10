@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, claude-code, ... }:
 
 {
   # Home Manager basic info
@@ -8,6 +8,11 @@
 
   # Let Home Manager install and manage itself
   programs.home-manager.enable = true;
+
+  # User packages
+  home.packages = [
+    claude-code.packages.${pkgs.system}.default
+  ];
 
   # ========================================
   # MINIMAL CONFIG - Testing home-manager

@@ -7,9 +7,13 @@
       url = "github:nix-community/home-manager/release-24.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    claude-code = {
+      url = "github:sadjow/claude-code-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager }: {
+  outputs = { self, nixpkgs, home-manager, claude-code }: {
     nixosConfigurations.dev-vm = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [
@@ -19,6 +23,9 @@
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           home-manager.users.dev = import ./home.nix;
+          home-manager.extraSpecialArgs = {
+            inherit claude-code;
+          };
         }
       ];
     };
