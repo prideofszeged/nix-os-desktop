@@ -183,11 +183,8 @@
   # Enable sudo without password for convenience (VM only!)
   security.sudo.wheelNeedsPassword = false;
 
-  # Enable ZSH system-wide (configured per-user in Home Manager)
-  programs.zsh.enable = true;
-
-  # Enable Git system-wide (configured per-user in Home Manager)
-  programs.git.enable = true;
+  # ZSH and Git are configured per-user via Home Manager
+  # Don't enable them here to avoid file conflicts
 
   # Network configuration
   networking.hostName = "nixos-dev";
