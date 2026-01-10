@@ -265,7 +265,7 @@
     "$HOME/.npm-global/bin"   # npm global packages (Claude Code)
   ];
 
-  # Install Claude Code 2.0.64 via npm
+  # Install Claude Code 2.0.64 using official installer
   home.activation.installClaudeCode = config.lib.dag.entryAfter ["writeBoundary"] ''
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "Installing Claude Code 2.0.64..."
@@ -274,27 +274,52 @@
     # Set up npm global directory
     mkdir -p $HOME/.npm-global
     export NPM_CONFIG_PREFIX="$HOME/.npm-global"
+    export PATH="$HOME/.npm-global/bin:$PATH"
 
     # Configure npm prefix
     ${pkgs.nodejs_20}/bin/npm config set prefix "$HOME/.npm-global"
 
-    # Always install (force reinstall to ensure it works)
-    echo "Running: npm install -g @anthropic-ai/claude-code@2.0.64"
-    ${pkgs.nodejs_20}/bin/npm install -g @anthropic-ai/claude-code@2.0.64 || {
-      echo "ERROR: Failed to install Claude Code!"
-      echo "You can manually install with: npm install -g @anthropic-ai/claude-code@2.0.64"
-    }
+    # Use official Claude Code installation script
+    if [ ! -f $HOME/.npm-global/bin/claude ]; then
+      echo "Running official Claude Code installer..."
+      ${pkgs.curl}/bin/curl -fsSL https://claude.ai/install.sh | ${pkgs.bash}/bin/bash -s -- 2.0.64 || {
+        echo "⚠️  Official installer failed, trying npm fallback..."
+        ${pkgs.nodejs_20}/bin/npm install -g @anthropic-ai/claude-code@2.0.64
+      }
+    else
+      echo "Claude Code already installed at $HOME/.npm-global/bin/claude"
+    fi
 
     # Verify installation
     if [ -f $HOME/.npm-global/bin/claude ]; then
       echo "✅ Claude Code installed successfully!"
       echo "Location: $HOME/.npm-global/bin/claude"
+      export PATH="$HOME/.npm-global/bin:$PATH"
       $HOME/.npm-global/bin/claude --version || echo "Version check failed"
     else
       echo "⚠️  Claude Code binary not found at $HOME/.npm-global/bin/claude"
-      echo "Check npm output above for errors"
+      echo "Run 'install-claude' manually after first boot"
     fi
 
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   '';
+
+  # Systemd user service to ensure Claude Code is installed on first boot
+  systemd.user.services.claude-code-installer = {
+    Unit = {
+      Description = "Install Claude Code on first boot";
+      After = [ "network-online.target" ];
+      Wants = [ "network-online.target" ];
+    };
+
+    Service = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = "${pkgs.bash}/bin/bash -c 'export PATH=$HOME/.npm-global/bin:$PATH; if [ ! -f $HOME/.npm-global/bin/claude ]; then ${pkgs.curl}/bin/curl -fsSL https://claude.ai/install.sh | ${pkgs.bash}/bin/bash -s -- 2.0.64; fi'";
+    };
+
+    Install = {
+      WantedBy = [ "default.target" ];
+    };
+  };
 }

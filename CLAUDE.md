@@ -124,10 +124,20 @@ virtualisation = {
 
 ## Claude Code Setup
 
-Claude Code 2.0.64 is installed automatically via Home Manager at `home.activation.installClaudeCode:269`.
+Claude Code 2.0.64 is installed automatically using a **dual installation mechanism**:
+
+1. **Home Manager Activation** (home.activation.installClaudeCode:269):
+   - Uses official installer: `curl -fsSL https://claude.ai/install.sh | bash -s -- 2.0.64`
+   - Falls back to npm if official installer fails
+   - Runs during VM build
+
+2. **Systemd User Service** (systemd.user.services.claude-code-installer:308):
+   - Backup installation on first boot
+   - Waits for network connectivity
+   - Only runs if Claude Code is not already installed
 
 Installation details:
-- Installed via npm to `~/.npm-global/bin/claude`
+- Installs to `~/.npm-global/bin/claude`
 - PATH configured in ZSH via `home.sessionPath`
 - Diagnostic scripts: `check-claude` and `install-claude` in `~/.local/bin/`
 

@@ -28,13 +28,21 @@ echo ""
 echo "Setting up npm global directory..."
 mkdir -p $HOME/.npm-global
 export NPM_CONFIG_PREFIX="$HOME/.npm-global"
+export PATH="$HOME/.npm-global/bin:$PATH"
 npm config set prefix "$HOME/.npm-global"
 echo "✅ npm prefix set to $HOME/.npm-global"
 echo ""
 
-# Install Claude Code
-echo "Installing Claude Code 2.0.64..."
-npm install -g @anthropic-ai/claude-code@2.0.64
+# Install Claude Code using official installer
+echo "Installing Claude Code 2.0.64 using official installer..."
+curl -fsSL https://claude.ai/install.sh | bash -s -- 2.0.64
+
+# If official installer fails, try npm fallback
+if [ ! -f $HOME/.npm-global/bin/claude ]; then
+    echo ""
+    echo "⚠️  Official installer failed, trying npm fallback..."
+    npm install -g @anthropic-ai/claude-code@2.0.64
+fi
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

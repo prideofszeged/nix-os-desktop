@@ -8,8 +8,9 @@ Claude Code 2.0.64 is automatically installed via Home Manager during VM setup.
 
 1. **Node.js 20** - Pre-installed as system package
 2. **npm global directory** - Set to `~/.npm-global` (user-owned)
-3. **Claude Code 2.0.64** - Installed via `home.activation.installClaudeCode`
-4. **PATH configuration** - Automatically added to shell PATH
+3. **Claude Code 2.0.64** - Installed via official installer (with npm fallback)
+4. **Systemd service** - Ensures installation completes on first boot
+5. **PATH configuration** - Automatically added to shell PATH
 
 ### Configuration Location
 
@@ -25,18 +26,30 @@ home.sessionPath = [
   "$HOME/.npm-global/bin"
 ];
 
-# Install Claude Code 2.0.64 via npm
+# Install Claude Code 2.0.64 using official installer
 home.activation.installClaudeCode = ''
   mkdir -p $HOME/.npm-global
+  export NPM_CONFIG_PREFIX="$HOME/.npm-global"
+  export PATH="$HOME/.npm-global/bin:$PATH"
   ${pkgs.nodejs_20}/bin/npm config set prefix "$HOME/.npm-global"
 
-  if [ ! -f $HOME/.npm-global/bin/claude ] || ! $HOME/.npm-global/bin/claude --version | grep -q "2.0.64"; then
-    echo "Installing Claude Code 2.0.64..."
-    ${pkgs.nodejs_20}/bin/npm install -g @anthropic-ai/claude-code@2.0.64
-  else
-    echo "Claude Code 2.0.64 already installed"
+  # Use official Claude Code installation script
+  if [ ! -f $HOME/.npm-global/bin/claude ]; then
+    echo "Running official Claude Code installer..."
+    ${pkgs.curl}/bin/curl -fsSL https://claude.ai/install.sh | ${pkgs.bash}/bin/bash -s -- 2.0.64 || {
+      echo "⚠️  Official installer failed, trying npm fallback..."
+      ${pkgs.nodejs_20}/bin/npm install -g @anthropic-ai/claude-code@2.0.64
+    }
   fi
 '';
+
+# Systemd user service for backup installation on first boot
+systemd.user.services.claude-code-installer = {
+  Unit.Description = "Install Claude Code on first boot";
+  Service.Type = "oneshot";
+  Service.ExecStart = "...install script...";
+  Install.WantedBy = [ "default.target" ];
+};
 ```
 
 ## Verification
@@ -79,22 +92,40 @@ claude config list
 
 ## Installation Details
 
+### Dual Installation Mechanism
+
+We use **two installation methods** for maximum reliability:
+
+#### 1. Home Manager Activation (Primary)
+- Runs during `nixos-rebuild` or VM build
+- Uses official installer: `curl -fsSL https://claude.ai/install.sh | bash -s -- 2.0.64`
+- Falls back to npm if official installer fails
+- Runs before user login
+
+#### 2. Systemd User Service (Backup)
+- Runs on first boot after network is available
+- Ensures Claude Code is installed even if activation script fails
+- Only runs if `claude` binary is not found
+- Configured to run once (RemainAfterExit=true)
+
 ### Why npm global?
 
-We use npm global installation because:
+We install to `~/.npm-global` because:
 - ✅ Specific version pinning (2.0.64)
 - ✅ User-owned directory (no permission issues)
 - ✅ Easy to update/rollback
 - ✅ Works with Home Manager
+- ✅ Official installer uses npm under the hood
 
 ### Why not Nix package?
 
 Claude Code isn't in nixpkgs yet, so we:
 1. Install Node.js via Nix (reproducible)
-2. Install Claude Code via npm (specific version)
-3. Manage via Home Manager (declarative)
+2. Install Claude Code via official installer (recommended method)
+3. Fallback to npm if needed (reliable)
+4. Manage via Home Manager (declarative)
 
-This is a hybrid approach that works until Claude Code is packaged for Nix.
+This hybrid approach works perfectly until Claude Code is packaged for Nix.
 
 ## Troubleshooting
 
