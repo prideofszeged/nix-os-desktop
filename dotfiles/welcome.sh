@@ -24,6 +24,6 @@ EOF
 echo -e "${PINK}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
 echo -e "${CYAN}  Welcome to the NixOS Developer Desktop - CYBERPUNK EDITION${RESET}"
 echo -e "${PURPLE}  Node $(node --version) | Python $(python --version 2>&1 | cut -d' ' -f2) | Go $(go version | cut -d' ' -f3 | sed 's/go//') | Rust $(rustc --version | cut -d' ' -f2)${RESET}"
-echo -e "${BLUE}  Type 'neofetch' for system info | 'cava' for audio visualizer | 'claude --help' for AI${RESET}"
+echo -e "${BLUE}  Type 'neofetch' for system info | 'cava' for audio visualizer | 'matrix' for fun${RESET}"
 echo -e "${PINK}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
 echo ""

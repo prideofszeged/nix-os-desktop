@@ -1,18 +1,26 @@
 { config, pkgs, ... }:
 
 {
-  # VM-specific settings
+  # VM-specific settings with SPICE support for better graphics
   virtualisation.vmVariant = {
     virtualisation = {
       memorySize = 8192;  # 8GB RAM
       cores = 4;
       diskSize = 40960;   # 40GB disk
       qemu.options = [
-        "-vga virtio"
-        # Display set via QEMU_OPTS in run script for flexibility
+        "-vga qxl"
+        # SPICE server for high-quality remote access
+        "-spice port=5930,disable-ticketing=on"
+        "-device virtio-serial-pci"
+        "-chardev spicevmc,id=vdagent,name=vdagent"
+        "-device virtserialport,chardev=vdagent,name=com.redhat.spice.0"
       ];
     };
   };
+
+  # SPICE/QEMU guest services for clipboard, resolution, etc.
+  services.spice-vdagentd.enable = true;
+  services.qemuGuest.enable = true;
 
   # Enable flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
@@ -66,7 +74,7 @@
     i3lock
     polybar
     rofi
-    picom
+    picom-pijulius  # Animated picom fork!
     dunst
     feh
     nitrogen
@@ -80,6 +88,8 @@
     zsh
     oh-my-zsh
     starship
+    bat     # Better cat
+    eza     # Better ls with icons
 
     # Fonts
     jetbrains-mono
@@ -100,14 +110,19 @@
     pavucontrol
     playerctl
 
-    # Theming
+    # Theming - Catppuccin!
     lxappearance
-    arc-theme
+    catppuccin-gtk
     papirus-icon-theme
 
     # Screen & Display
     arandr
     autorandr
+
+    # SPICE clipboard support
+    spice-vdagent
+    xclip         # X11 clipboard utilities
+    xsel          # Alternative X11 clipboard
 
     # CYBERPUNK AESTHETIC TOOLS
     neofetch
@@ -118,7 +133,13 @@
     cmatrix
     pipes
     cbonsai
+
+    # Required for GTK theme settings via home-manager
+    dconf
   ];
+
+  # Enable dconf - required for GTK settings in home-manager
+  programs.dconf.enable = true;
 
   # X11 and i3 configuration
   services.xserver = {
@@ -153,13 +174,13 @@
   sound.enable = true;
   hardware.pulseaudio.enable = true;
 
-  # Compositing for transparency and effects
-  services.picom = {
-    enable = true;
-    fade = true;
-    shadow = true;
-    fadeDelta = 4;
-  };
+  # Compositing - DISABLED, using picom-pijulius from i3 startup
+  # services.picom = {
+  #   enable = true;
+  #   fade = true;
+  #   shadow = true;
+  #   fadeDelta = 4;
+  # };
 
   # Fonts
   fonts.packages = with pkgs; [

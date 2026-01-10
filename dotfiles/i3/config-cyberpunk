@@ -10,8 +10,8 @@ floating_modifier $mod
 
 # Start a terminal (multiple options!)
 bindsym $mod+Return exec alacritty
-bindsym $mod+Shift+Return exec ghostty
-bindsym $mod+Ctrl+Return exec kitty
+bindsym $mod+Shift+Return exec kitty
+# bindsym $mod+Ctrl+Return exec kitty  # Ghostty removed - not in nixpkgs 24.05
 
 # Kill focused window
 bindsym $mod+Shift+q kill
@@ -129,15 +129,15 @@ mode "resize" {
 
 bindsym $mod+r mode "resize"
 
-# CYBERPUNK Color scheme (Neon!)
-set $bg-color            #0a0e14
-set $inactive-bg-color   #1a1a2e
-set $text-color          #e0e0e0
-set $inactive-text-color #888888
-set $urgent-bg-color     #ff006e
-set $indicator-color     #00f5ff
-set $neon-purple         #bf00ff
-set $neon-pink           #ff0a78
+# CATPPUCCIN MOCHA Color scheme (Snazzy!)
+set $bg-color            #1e1e2e
+set $inactive-bg-color   #313244
+set $text-color          #cdd6f4
+set $inactive-text-color #6c7086
+set $urgent-bg-color     #f38ba8
+set $indicator-color     #94e2d5
+set $neon-purple         #cba6f7
+set $neon-pink           #f5c2e7
 
 # Window colors (NEON BORDERS!)
 #                       border              background         text                 indicator
@@ -162,6 +162,9 @@ bindsym $mod+shift+x exec --no-startup-id i3lock -c 0a0e14
 
 # Startup applications (ALL AUTOMATIC!)
 exec_always --no-startup-id ~/.config/polybar/launch.sh
-exec_always --no-startup-id picom -b
+exec_always --no-startup-id picom -b --config ~/.config/picom/picom.conf
 exec --no-startup-id feh --bg-scale ~/.config/wallpaper.png
-exec --no-startup-id dunst
+exec --no-startup-id dunst -config ~/.config/dunst/dunstrc
+
+# SPICE clipboard support - must run in X session
+exec --no-startup-id spice-vdagent
