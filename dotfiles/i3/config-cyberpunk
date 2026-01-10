@@ -10,8 +10,8 @@ floating_modifier $mod
 
 # Start a terminal (multiple options!)
 bindsym $mod+Return exec alacritty
-bindsym $mod+Shift+Return exec ghostty
-bindsym $mod+Ctrl+Return exec kitty
+bindsym $mod+Shift+Return exec kitty
+# bindsym $mod+Ctrl+Return exec kitty  # Ghostty removed - not in nixpkgs 24.05
 
 # Kill focused window
 bindsym $mod+Shift+q kill

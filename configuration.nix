@@ -108,7 +108,13 @@
     cmatrix
     pipes
     cbonsai
+
+    # Required for GTK theme settings via home-manager
+    dconf
   ];
+
+  # Enable dconf - required for GTK settings in home-manager
+  programs.dconf.enable = true;
 
   # X11 and i3 configuration
   services.xserver = {
