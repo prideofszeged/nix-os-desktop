@@ -56,6 +56,16 @@
     executable = true;
   };
 
+  home.file.".local/bin/debug-claude-install" = {
+    source = ./dotfiles/debug-claude-install.sh;
+    executable = true;
+  };
+
+  home.file.".local/bin/show-install-logs" = {
+    source = ./dotfiles/show-install-logs.sh;
+    executable = true;
+  };
+
   # Generate Cyberpunk Wallpaper (deterministic, BRIGHT & VIBRANT!)
   home.activation.generateWallpaper = ''
     mkdir -p ~/.config/wallpapers
@@ -148,8 +158,15 @@
           echo "✅ Claude Code $CLAUDE_VER ready!"
         else
           echo "⚠️  Claude Code not found in PATH"
-          echo "   Run: check-claude     # Diagnose the issue"
-          echo "   Run: install-claude   # Install manually"
+          echo ""
+          echo "   Diagnostic commands:"
+          echo "   • debug-claude-install  - Full diagnostic report"
+          echo "   • check-claude          - Quick status check"
+          echo "   • install-claude        - Manual installation"
+          echo ""
+          echo "   Check activation logs:"
+          echo "   • journalctl --user -u home-manager-dev.service"
+          echo "   • systemctl --user status claude-code-installer"
         fi
         touch /tmp/.claude-version-shown
         echo ""
@@ -267,8 +284,12 @@
 
   # Install Claude Code 2.0.64 using official installer
   home.activation.installClaudeCode = config.lib.dag.entryAfter ["writeBoundary"] ''
+    set -x  # Enable verbose logging
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "Installing Claude Code 2.0.64..."
+    echo "Running as: $(whoami)"
+    echo "HOME: $HOME"
+    echo "PWD: $(pwd)"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
     # Set up npm global directory
@@ -276,32 +297,56 @@
     export NPM_CONFIG_PREFIX="$HOME/.npm-global"
     export PATH="$HOME/.npm-global/bin:$PATH"
 
+    echo "NPM_CONFIG_PREFIX: $NPM_CONFIG_PREFIX"
+    echo "PATH: $PATH"
+
     # Configure npm prefix
+    echo "Configuring npm prefix..."
     ${pkgs.nodejs_20}/bin/npm config set prefix "$HOME/.npm-global"
+    echo "npm prefix is now: $(${pkgs.nodejs_20}/bin/npm config get prefix)"
 
     # Use official Claude Code installation script
     if [ ! -f $HOME/.npm-global/bin/claude ]; then
-      echo "Running official Claude Code installer..."
-      ${pkgs.curl}/bin/curl -fsSL https://claude.ai/install.sh | ${pkgs.bash}/bin/bash -s -- 2.0.64 || {
-        echo "⚠️  Official installer failed, trying npm fallback..."
+      echo "Claude binary not found, installing..."
+      echo "Trying official installer..."
+
+      if ${pkgs.curl}/bin/curl -fsSL https://claude.ai/install.sh | ${pkgs.bash}/bin/bash -s -- 2.0.64; then
+        echo "✅ Official installer completed"
+      else
+        echo "⚠️  Official installer failed (exit code: $?), trying npm fallback..."
         ${pkgs.nodejs_20}/bin/npm install -g @anthropic-ai/claude-code@2.0.64
-      }
+      fi
     else
       echo "Claude Code already installed at $HOME/.npm-global/bin/claude"
     fi
 
     # Verify installation
+    echo "Verifying installation..."
     if [ -f $HOME/.npm-global/bin/claude ]; then
       echo "✅ Claude Code installed successfully!"
       echo "Location: $HOME/.npm-global/bin/claude"
+      ls -lh $HOME/.npm-global/bin/claude
+
       export PATH="$HOME/.npm-global/bin:$PATH"
-      $HOME/.npm-global/bin/claude --version || echo "Version check failed"
+      if $HOME/.npm-global/bin/claude --version 2>&1; then
+        echo "✅ Version check passed"
+      else
+        echo "⚠️  Version check failed (exit code: $?)"
+      fi
     else
-      echo "⚠️  Claude Code binary not found at $HOME/.npm-global/bin/claude"
-      echo "Run 'install-claude' manually after first boot"
+      echo "❌ Claude Code binary not found at $HOME/.npm-global/bin/claude"
+      echo "Contents of ~/.npm-global/bin/:"
+      ls -la $HOME/.npm-global/bin/ 2>&1 || echo "Directory does not exist or is empty"
+      echo ""
+      echo "Global npm packages:"
+      ${pkgs.nodejs_20}/bin/npm list -g --depth=0 2>&1 || echo "No global packages"
+      echo ""
+      echo "Run 'debug-claude-install' for detailed diagnostics"
+      echo "Run 'install-claude' to manually install"
     fi
 
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    set +x  # Disable verbose logging
   '';
 
   # Systemd user service to ensure Claude Code is installed on first boot
