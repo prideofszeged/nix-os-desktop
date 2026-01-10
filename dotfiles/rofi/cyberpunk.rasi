@@ -1,0 +1,90 @@
+configuration {
+    modi: "drun,run";
+    display-drun: "APPS";
+    display-run: "RUN";
+    show-icons: true;
+    icon-theme: "Papirus";
+    font: "JetBrains Mono Nerd Font 14";
+}
+
+* {
+    bg: #0a0e14;
+    bg-alt: #1a1a2e;
+    fg: #e0e0e0;
+    fg-alt: #888888;
+
+    neon-pink: #ff0a78;
+    neon-purple: #bf00ff;
+    neon-cyan: #00f5ff;
+    neon-blue: #0066ff;
+
+    background-color: @bg;
+    text-color: @fg;
+    border-color: @neon-pink;
+}
+
+window {
+    width: 700px;
+    border: 3px;
+    border-radius: 12px;
+    transparency: "real";
+}
+
+mainbox {
+    padding: 30px;
+}
+
+inputbar {
+    children: [prompt, entry];
+    padding: 15px;
+    border-radius: 8px;
+    background-color: @bg-alt;
+    border: 2px;
+    border-color: @neon-purple;
+}
+
+prompt {
+    background-color: @bg-alt;
+    text-color: @neon-cyan;
+    padding: 0 15px 0 0;
+    font: "JetBrains Mono Nerd Font Bold 14";
+}
+
+entry {
+    background-color: @bg-alt;
+    placeholder: "Search...";
+    placeholder-color: @fg-alt;
+}
+
+listview {
+    lines: 8;
+    spacing: 8px;
+    margin: 15px 0 0 0;
+}
+
+element {
+    padding: 12px;
+    border-radius: 8px;
+    border: 2px;
+    border-color: transparent;
+}
+
+element selected {
+    background-color: @bg-alt;
+    text-color: @neon-pink;
+    border-color: @neon-pink;
+}
+
+element-text {
+    background-color: inherit;
+    text-color: inherit;
+}
+
+element-icon {
+    size: 28px;
+    background-color: inherit;
+}
+
+element-text selected {
+    text-color: @neon-cyan;
+}

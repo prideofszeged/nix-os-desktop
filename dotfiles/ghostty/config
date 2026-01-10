@@ -1,0 +1,60 @@
+# Ghostty Terminal Configuration - CYBERPUNK EDITION
+
+# Font
+font-family = JetBrains Mono Nerd Font
+font-size = 11
+font-feature = -calt
+
+# Theme - Cyberpunk colors
+background = 0a0e14
+foreground = e0e0e0
+
+# Cursor
+cursor-color = ff0a78
+cursor-style = block
+cursor-style-blink = true
+
+# Cyberpunk Palette
+palette = 0=#1a1a2e
+palette = 1=#ff006e
+palette = 2=#00ff9f
+palette = 3=#ffbd00
+palette = 4=#0066ff
+palette = 5=#bf00ff
+palette = 6=#00f5ff
+palette = 7=#e0e0e0
+palette = 8=#2a2a3e
+palette = 9=#ff4d8b
+palette = 10=#00ffcc
+palette = 11=#ffd966
+palette = 12=#3399ff
+palette = 13=#d966ff
+palette = 14=#66ffff
+palette = 15=#ffffff
+
+# Window
+window-padding-x = 15
+window-padding-y = 15
+window-decoration = false
+
+# Background opacity
+background-opacity = 0.85
+background-blur-radius = 20
+
+# Shell
+shell-integration = zsh
+shell-integration-features = cursor,sudo,title
+
+# Performance
+gpu-shader-cache = true
+
+# Keybindings
+keybind = ctrl+shift+c=copy_to_clipboard
+keybind = ctrl+shift+v=paste_from_clipboard
+keybind = ctrl+shift+t=new_tab
+keybind = ctrl+shift+w=close_surface
+keybind = ctrl+shift+n=new_window
+
+# Mouse
+mouse-hide-while-typing = true
+clipboard-trim-trailing-spaces = true

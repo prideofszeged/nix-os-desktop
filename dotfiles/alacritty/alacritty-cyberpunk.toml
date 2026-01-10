@@ -1,0 +1,48 @@
+[window]
+opacity = 0.85
+padding = { x = 15, y = 15 }
+blur = true
+
+[font]
+size = 11.0
+
+[font.normal]
+family = "JetBrains Mono Nerd Font"
+style = "Regular"
+
+[font.bold]
+family = "JetBrains Mono Nerd Font"
+style = "Bold"
+
+[font.italic]
+family = "JetBrains Mono Nerd Font"
+style = "Italic"
+
+# CYBERPUNK Colors
+[colors.primary]
+background = "#0a0e14"
+foreground = "#e0e0e0"
+
+[colors.cursor]
+text = "#0a0e14"
+cursor = "#ff0a78"
+
+[colors.normal]
+black = "#1a1a2e"
+red = "#ff006e"
+green = "#00ff9f"
+yellow = "#ffbd00"
+blue = "#0066ff"
+magenta = "#bf00ff"
+cyan = "#00f5ff"
+white = "#e0e0e0"
+
+[colors.bright]
+black = "#2a2a3e"
+red = "#ff4d8b"
+green = "#00ffcc"
+yellow = "#ffd966"
+blue = "#3399ff"
+magenta = "#d966ff"
+cyan = "#66ffff"
+white = "#ffffff"
