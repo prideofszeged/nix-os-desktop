@@ -20,6 +20,16 @@
   # Allow unfree packages (needed for VS Code, etc.)
   nixpkgs.config.allowUnfree = true;
 
+  # Enable nix-ld to run dynamic binaries (needed for Claude Code)
+  programs.nix-ld.enable = true;
+  programs.nix-ld.libraries = with pkgs; [
+    # Add common libraries that dynamic binaries expect
+    stdenv.cc.cc.lib
+    zlib
+    openssl
+    curl
+  ];
+
   # System packages - Development tools + Desktop environment
   environment.systemPackages = with pkgs; [
     # Development Languages & Tools

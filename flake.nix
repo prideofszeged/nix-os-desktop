@@ -19,6 +19,8 @@
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           home-manager.users.dev = import ./home.nix;
+          home-manager.backupFileExtension = "backup";
+          home-manager.verbose = true;  # Enable verbose output for debugging
         }
       ];
     };

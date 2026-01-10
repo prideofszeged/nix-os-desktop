@@ -13,6 +13,11 @@
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
 
+  # Add home-manager to user packages for CLI access
+  home.packages = with pkgs; [
+    # Empty for now, packages added below
+  ];
+
   # ========================================
   # CYBERPUNK DOTFILES - Fully Declarative!
   # ========================================
