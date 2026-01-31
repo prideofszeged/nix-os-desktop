@@ -106,6 +106,7 @@
     zsh
     oh-my-zsh
     starship
+    zellij
     bat     # Better cat
     eza     # Better ls with icons
 
