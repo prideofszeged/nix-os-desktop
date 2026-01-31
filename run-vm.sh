@@ -7,6 +7,7 @@ PERSIST_DIR="/nvme/nix-vm-persist"
 # Parse flags
 RESET=false
 BUILD=false
+HEADLESS=false
 while [[ $# -gt 0 ]]; do
     case $1 in
         --reset)
@@ -17,10 +18,15 @@ while [[ $# -gt 0 ]]; do
             BUILD=true
             shift
             ;;
+        --headless)
+            HEADLESS=true
+            shift
+            ;;
         -h|--help)
             echo "Usage: ./run-vm.sh [OPTIONS]"
             echo ""
             echo "Options:"
+            echo "  --headless Run without display, SSH on port 2222"
             echo "  --reset    Delete VM disk and start fresh (keeps $PERSIST_DIR)"
             echo "  --build    Rebuild VM before running"
             echo "  -h, --help Show this help"
@@ -60,20 +66,25 @@ fi
 echo ""
 echo "Starting NixOS Developer VM..."
 echo ""
-echo "VM will open in a new window with:"
-echo "  - i3 window manager + snazzy Catppuccin rice"
-echo "  - Development tools: Node, Python, Go, Rust, Claude Code"
-echo "  - Username: dev"
-echo "  - Password: dev"
-echo ""
-echo "📂 Persistent storage: $PERSIST_DIR → /persist (in VM)"
-echo "📺 Display: SPICE (remote-viewer on localhost:5930)"
-echo ""
-echo "Press Ctrl+Alt+G to release mouse from VM"
-echo "Close the VM window to shut down"
+echo "  Username: dev  |  Password: dev"
+echo "  📂 Persistent storage: $PERSIST_DIR → /persist (in VM)"
 echo ""
 
-# Run the VM with shared folder
-# virtfs for sharing host directory with guest
-QEMU_OPTS="-m 12G -smp 6 -virtfs local,path=$PERSIST_DIR,mount_tag=persist,security_model=mapped-xattr,id=persist" \
-    ./result/bin/run-nixos-dev-vm
+SHARED_OPTS="-virtfs local,path=$PERSIST_DIR,mount_tag=persist,security_model=mapped-xattr,id=persist"
+
+if [ "$HEADLESS" = true ]; then
+    echo "📡 Headless mode: SSH on localhost:2222"
+    echo "  Connect:  ssh -p 2222 dev@localhost"
+    echo "  Shutdown: ssh -p 2222 dev@localhost sudo poweroff"
+    echo ""
+    QEMU_OPTS="-m 12G -smp 6 $SHARED_OPTS -display none -serial mon:stdio" \
+    QEMU_NET_OPTS="hostfwd=tcp::2222-:22" \
+        ./result/bin/run-nixos-dev-vm
+else
+    echo "📺 Display: SPICE (remote-viewer on localhost:5930)"
+    echo "  Press Ctrl+Alt+G to release mouse from VM"
+    echo "  Close the VM window to shut down"
+    echo ""
+    QEMU_OPTS="-m 12G -smp 6 $SHARED_OPTS -display spice-app" \
+        ./result/bin/run-nixos-dev-vm
+fi

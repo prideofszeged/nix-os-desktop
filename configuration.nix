@@ -9,7 +9,6 @@
       diskSize = 60000;   # 60GB disk
       qemu.options = [
         "-vga qxl"
-        "-display spice-app"
         "-spice port=5930,disable-ticketing=on"
         "-device virtio-serial-pci"
         "-chardev spicevmc,id=vdagent,name=vdagent"
@@ -252,6 +251,9 @@
 
   # Locale
   i18n.defaultLocale = "en_US.UTF-8";
+
+  # Serial console for headless mode
+  boot.kernelParams = [ "console=tty1" "console=ttyS0,115200" ];
 
   # Enable SSH for remote access
   services.openssh = {
