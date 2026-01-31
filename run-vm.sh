@@ -91,14 +91,12 @@ echo "  Username: dev  |  Password: dev"
 echo "  📂 Persistent storage: $PERSIST_DIR → /persist (in VM)"
 echo ""
 
-SHARED_OPTS="-virtfs local,path=$PERSIST_DIR,mount_tag=persist,security_model=mapped-xattr,id=persist"
-
 if [ "$HEADLESS" = true ]; then
     echo "📡 Headless mode: SSH on localhost:2222"
     echo "  Connect:  ssh -p 2222 dev@localhost"
     echo "  Shutdown: ssh -p 2222 dev@localhost sudo poweroff"
     echo ""
-    QEMU_OPTS="-m 12G -smp 6 $SHARED_OPTS -display none -serial mon:stdio" \
+    QEMU_OPTS="-m 12G -smp 6 -display none -serial mon:stdio" \
     QEMU_NET_OPTS="hostfwd=tcp::2222-:22" \
         ./result/bin/run-nixos-dev-vm
 else
@@ -106,6 +104,6 @@ else
     echo "  Press Ctrl+Alt+G to release mouse from VM"
     echo "  Close the VM window to shut down"
     echo ""
-    QEMU_OPTS="-m 12G -smp 6 $SHARED_OPTS -display spice-app" \
+    QEMU_OPTS="-m 12G -smp 6 -display spice-app" \
         ./result/bin/run-nixos-dev-vm
 fi
