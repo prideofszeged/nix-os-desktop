@@ -32,6 +32,10 @@
         chmod 700 /persist/ssh
         ln -sf /persist/ssh "$HOME/.ssh"
       fi
+      # Ensure authorized_keys has correct permissions
+      if [ -f /persist/ssh/authorized_keys ]; then
+        chmod 600 /persist/ssh/authorized_keys
+      fi
 
       # Claude Code config (API keys, settings)
       if [ ! -L "$HOME/.claude" ] && [ ! -d "$HOME/.claude" ]; then
@@ -39,9 +43,11 @@
         ln -sf /persist/claude "$HOME/.claude"
       fi
 
-      # Git config (optional - for credentials)
-      if [ ! -L "$HOME/.gitconfig.local" ] && [ -f /persist/.gitconfig.local ]; then
-        ln -sf /persist/.gitconfig.local "$HOME/.gitconfig.local"
+      # Git config (for credentials/identity from /persist)
+      if [ ! -L "$HOME/.gitconfig.local" ]; then
+        if [ -f /persist/.gitconfig.local ]; then
+          ln -sf /persist/.gitconfig.local "$HOME/.gitconfig.local"
+        fi
       fi
     fi
   '';

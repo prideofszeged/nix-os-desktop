@@ -230,6 +230,9 @@
     password = "dev";
     shell = pkgs.zsh;
     ignoreShellProgramCheck = true;  # ZSH configured via Home Manager
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOfPvXGMnr9qjcqYz5X3zpR4UFH2OZM2mBpD8e6fyWTL steven@steven-MS-7B86"
+    ];
   };
 
   # NOTE: All dotfile management moved to Home Manager (home.nix)
@@ -257,8 +260,11 @@
   # Enable SSH for remote access
   services.openssh = {
     enable = true;
-    settings.PermitRootLogin = "no";
-    settings.PasswordAuthentication = true;
+    settings = {
+      PermitRootLogin = "no";
+      PasswordAuthentication = false;  # Key-only auth
+      PubkeyAuthentication = true;
+    };
   };
 
   # Docker
