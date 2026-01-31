@@ -1,21 +1,28 @@
 { config, pkgs, ... }:
 
 {
-  # VM-specific settings with SPICE support for better graphics
+  # VM-specific settings with virtio-gpu (no GL - NVIDIA host incompatible with virgl)
   virtualisation.vmVariant = {
     virtualisation = {
-      memorySize = 8192;  # 8GB RAM
-      cores = 4;
-      diskSize = 40960;   # 40GB disk
+      memorySize = 12288;  # 12GB RAM
+      cores = 6;
+      diskSize = 60000;   # 60GB disk
       qemu.options = [
         "-vga qxl"
-        # SPICE server for high-quality remote access
+        "-display spice-app"
         "-spice port=5930,disable-ticketing=on"
         "-device virtio-serial-pci"
         "-chardev spicevmc,id=vdagent,name=vdagent"
         "-device virtserialport,chardev=vdagent,name=com.redhat.spice.0"
       ];
     };
+  };
+
+  # Mount persistent storage from host via 9p
+  fileSystems."/persist" = {
+    device = "persist";
+    fsType = "9p";
+    options = [ "trans=virtio" "version=9p2000.L" "msize=104857600" "cache=loose" "nofail" ];
   };
 
   # SPICE/QEMU guest services for clipboard, resolution, etc.
@@ -54,6 +61,8 @@
     # Development Utilities
     git
     gh
+    lazygit
+    delta
     neovim
     vim
     vscode
@@ -62,11 +71,23 @@
     fd
     fzf
     jq
+    yq
     htop
     btop
     tree
     wget
     curl
+    httpie
+    direnv
+
+    # Docker & Containers
+    docker
+    docker-compose
+
+    # Database Clients
+    postgresql
+    redis
+    sqlite
 
     # i3 Window Manager & Rice
     i3
@@ -93,7 +114,9 @@
 
     # Fonts
     jetbrains-mono
-    nerdfonts
+    nerd-fonts.jetbrains-mono
+    nerd-fonts.fira-code
+    nerd-fonts.droid-sans-mono
     font-awesome
 
     # GUI Applications
@@ -144,6 +167,7 @@
   # X11 and i3 configuration
   services.xserver = {
     enable = true;
+    dpi = 96;
 
     windowManager.i3 = {
       enable = true;
@@ -170,9 +194,18 @@
   # LightDM
   services.xserver.displayManager.lightdm.enable = true;
 
-  # Audio
-  sound.enable = true;
-  hardware.pulseaudio.enable = true;
+  # GPU acceleration for virtio-gpu (virgl)
+  hardware.graphics.enable = true;
+
+  # Audio - PipeWire (default in unstable)
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;  # PulseAudio compatibility
+  };
+  # Explicitly disable PulseAudio to avoid conflict
+  services.pulseaudio.enable = false;
 
   # Compositing - DISABLED, using picom-pijulius from i3 startup
   # services.picom = {
@@ -185,7 +218,9 @@
   # Fonts
   fonts.packages = with pkgs; [
     jetbrains-mono
-    (nerdfonts.override { fonts = [ "JetBrainsMono" "FiraCode" "DroidSansMono" ]; })
+    nerd-fonts.jetbrains-mono
+    nerd-fonts.fira-code
+    nerd-fonts.droid-sans-mono
     font-awesome
   ];
 
@@ -193,7 +228,7 @@
   users.users.dev = {
     isNormalUser = true;
     description = "Developer";
-    extraGroups = [ "wheel" "networkmanager" "audio" "video" ];
+    extraGroups = [ "wheel" "networkmanager" "audio" "video" "docker" ];
     password = "dev";
     shell = pkgs.zsh;
     ignoreShellProgramCheck = true;  # ZSH configured via Home Manager
@@ -224,6 +259,15 @@
     settings.PermitRootLogin = "no";
     settings.PasswordAuthentication = true;
   };
+
+  # Docker
+  virtualisation.docker = {
+    enable = true;
+    enableOnBoot = true;
+  };
+
+  # Direnv integration
+  programs.direnv.enable = true;
 
   # System state version
   system.stateVersion = "24.05";

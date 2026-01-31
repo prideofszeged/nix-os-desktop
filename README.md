@@ -51,22 +51,44 @@ A **fully automatic, 100% reproducible** NixOS virtual machine with cyberpunk-th
 
 ## Quick Start
 
-### 1. Build the VM (first time only)
+### 1. First Time Setup
 
 ```bash
 chmod +x build-vm.sh run-vm.sh
-./build-vm.sh
+
+# Update flake to pull latest packages
+nix flake update
+
+# Build and run
+./run-vm.sh --build
 ```
 
-This will take 10-15 minutes on first build as it downloads and builds all packages.
+First build takes 10-15 minutes as it downloads and builds all packages.
 
-### 2. Run the VM
+### 2. Daily Usage
 
 ```bash
+# Just run (uses existing build)
 ./run-vm.sh
+
+# Rebuild after config changes
+./run-vm.sh --build
+
+# Nuclear option: wipe VM and start fresh (keeps /persist data)
+./run-vm.sh --reset
 ```
 
-### 3. Enjoy!
+### 3. Persistent Storage
+
+Data you want to survive `--reset` lives in `/nvme/nix-vm-persist` on the host, mounted as `/persist` in the VM:
+
+| Host Path | VM Path | Purpose |
+|-----------|---------|---------|
+| `/nvme/nix-vm-persist/projects` | `~/projects` | Your code |
+| `/nvme/nix-vm-persist/ssh` | `~/.ssh` | SSH keys |
+| `/nvme/nix-vm-persist/claude` | `~/.claude` | Claude Code config/API keys |
+
+**Workflow:** Clone repos into `~/projects`, they survive resets. Blow up the VM with `--reset` whenever Claude Code goes rogue.
 
 - **Auto-login** enabled (user: dev)
 - **Cyberpunk rice** loads automatically

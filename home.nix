@@ -15,6 +15,38 @@
   ];
 
   # ========================================
+  # PERSISTENT STORAGE SYMLINKS
+  # ========================================
+  # These directories survive VM resets (stored on host at /nvme/nix-vm-persist)
+  home.activation.setupPersistentLinks = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    # Only create symlinks if /persist is mounted
+    if [ -d /persist ]; then
+      # Projects directory
+      if [ ! -L "$HOME/projects" ] && [ ! -d "$HOME/projects" ]; then
+        ln -sf /persist/projects "$HOME/projects"
+      fi
+
+      # SSH keys
+      if [ ! -L "$HOME/.ssh" ] && [ ! -d "$HOME/.ssh" ]; then
+        mkdir -p /persist/ssh
+        chmod 700 /persist/ssh
+        ln -sf /persist/ssh "$HOME/.ssh"
+      fi
+
+      # Claude Code config (API keys, settings)
+      if [ ! -L "$HOME/.claude" ] && [ ! -d "$HOME/.claude" ]; then
+        mkdir -p /persist/claude
+        ln -sf /persist/claude "$HOME/.claude"
+      fi
+
+      # Git config (optional - for credentials)
+      if [ ! -L "$HOME/.gitconfig.local" ] && [ -f /persist/.gitconfig.local ]; then
+        ln -sf /persist/.gitconfig.local "$HOME/.gitconfig.local"
+      fi
+    fi
+  '';
+
+  # ========================================
   # SNAZZY RICE CONFIG - Catppuccin + Cyber
   # ========================================
 
@@ -60,7 +92,7 @@
     };
     cursorTheme = {
       name = "Adwaita";
-      package = pkgs.gnome.adwaita-icon-theme;
+      package = pkgs.adwaita-icon-theme;
     };
   };
 
@@ -91,7 +123,7 @@
       ];
     };
 
-    initExtra = ''
+    initContent = ''
       # Cyberpunk welcome banner
       if [ -f ~/.config/welcome.sh ]; then
         ~/.config/welcome.sh
@@ -109,6 +141,19 @@
         touch /tmp/.claude-version-shown
         echo ""
       fi
+
+      # Direnv hook
+      eval "$(direnv hook zsh)"
+
+      # Persistent storage reminder on first login
+      if [ ! -f /tmp/.persist-reminder-shown ] && [ -d /persist ]; then
+        echo "📂 Persistent storage mounted at /persist"
+        echo "   ~/projects → /persist/projects"
+        echo "   ~/.ssh     → /persist/ssh"
+        echo "   ~/.claude  → /persist/claude"
+        touch /tmp/.persist-reminder-shown
+        echo ""
+      fi
     '';
   };
 
@@ -117,6 +162,34 @@
     enable = true;
     userName = "Developer";
     userEmail = "dev@cyberpunk.local";
+    delta = {
+      enable = true;
+      options = {
+        navigate = true;
+        line-numbers = true;
+        syntax-theme = "Catppuccin-mocha";
+      };
+    };
+    extraConfig = {
+      init.defaultBranch = "main";
+      pull.rebase = true;
+      push.autoSetupRemote = true;
+      # Include local config if exists (for credentials from /persist)
+      include.path = "~/.gitconfig.local";
+    };
+  };
+
+  # Lazygit
+  programs.lazygit = {
+    enable = true;
+    settings = {
+      gui.theme = {
+        lightTheme = false;
+        activeBorderColor = [ "#f5c2e7" "bold" ];
+        inactiveBorderColor = [ "#a6adc8" ];
+        selectedLineBgColor = [ "#313244" ];
+      };
+    };
   };
 
   # Neovim
