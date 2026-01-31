@@ -15,13 +15,14 @@
         "-device virtserialport,chardev=vdagent,name=com.redhat.spice.0"
       ];
     };
-  };
 
-  # Mount persistent storage from host via 9p
-  fileSystems."/persist" = {
-    device = "persist";
-    fsType = "9p";
-    options = [ "trans=virtio" "version=9p2000.L" "msize=104857600" "cache=loose" "nofail" ];
+    # Mount persistent storage from host via 9p (must be inside vmVariant
+    # because the VM module overrides fileSystems at priority 10)
+    fileSystems."/persist" = {
+      device = "persist";
+      fsType = "9p";
+      options = [ "trans=virtio" "version=9p2000.L" "msize=104857600" "cache=loose" "nofail" ];
+    };
   };
 
   # SPICE/QEMU guest services for clipboard, resolution, etc.

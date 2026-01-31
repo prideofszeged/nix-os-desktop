@@ -2,12 +2,13 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PERSIST_DIR="/nvme/nix-vm-persist"
+PERSIST_DIR="/mnt/nvme/nix-vm-persist"
 
 # Parse flags
 RESET=false
 BUILD=false
 HEADLESS=false
+RESTART=false
 while [[ $# -gt 0 ]]; do
     case $1 in
         --reset)
@@ -22,11 +23,16 @@ while [[ $# -gt 0 ]]; do
             HEADLESS=true
             shift
             ;;
+        --restart)
+            RESTART=true
+            shift
+            ;;
         -h|--help)
             echo "Usage: ./run-vm.sh [OPTIONS]"
             echo ""
             echo "Options:"
             echo "  --headless Run without display, SSH on port 2222"
+            echo "  --restart  Kill running VM before starting"
             echo "  --reset    Delete VM disk and start fresh (keeps $PERSIST_DIR)"
             echo "  --build    Rebuild VM before running"
             echo "  -h, --help Show this help"
@@ -38,6 +44,21 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# Handle restart - kill any running VM
+if [ "$RESTART" = true ]; then
+    QEMU_PID=$(pgrep -f 'qemu-system.*nixos-dev' || true)
+    if [ -n "$QEMU_PID" ]; then
+        echo "Stopping running VM (PID $QEMU_PID)..."
+        kill "$QEMU_PID"
+        sleep 2
+        # Force kill if still alive
+        kill -0 "$QEMU_PID" 2>/dev/null && kill -9 "$QEMU_PID"
+        echo "   VM stopped."
+    else
+        echo "No running VM found."
+    fi
+fi
 
 # Handle reset
 if [ "$RESET" = true ]; then
