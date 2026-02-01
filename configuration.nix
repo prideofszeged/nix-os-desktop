@@ -55,6 +55,12 @@
     rustfmt
     rust-analyzer
 
+    # Lua Development
+    lua5_4
+    luajit
+    luarocks
+    love          # LÖVE 2D game framework
+
     # Development Utilities
     git
     gh
@@ -194,6 +200,24 @@
 
   # GPU acceleration for virtio-gpu (virgl)
   hardware.graphics.enable = true;
+
+  # Printing - CUPS with Canon drivers and network discovery
+  services.printing = {
+    enable = true;
+    drivers = with pkgs; [
+      canon-cups-ufr2   # Canon laser printers (UFR II)
+      cnijfilter2       # Canon inkjet printers
+      gutenprint        # Wide printer support (fallback)
+      gutenprintBin     # Binary gutenprint drivers
+    ];
+  };
+
+  # Network printer auto-discovery (Avahi/mDNS)
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;   # Enable mDNS name resolution
+    openFirewall = true;
+  };
 
   # Audio - PipeWire (default in unstable)
   services.pipewire = {

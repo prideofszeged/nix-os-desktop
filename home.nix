@@ -43,12 +43,27 @@
         ln -sf /persist/claude "$HOME/.claude"
       fi
 
+      # Local bin (cursor agent, etc.)
+      if [ ! -L "$HOME/.local" ] && [ ! -d "$HOME/.local" ]; then
+        mkdir -p /persist/local/bin
+        ln -sf /persist/local "$HOME/.local"
+      fi
+
       # Git config (for credentials/identity from /persist)
       if [ ! -L "$HOME/.gitconfig.local" ]; then
         if [ -f /persist/.gitconfig.local ]; then
           ln -sf /persist/.gitconfig.local "$HOME/.gitconfig.local"
         fi
       fi
+    fi
+  '';
+
+  # Install Cursor agent if not present
+  home.activation.installCursorAgent = lib.hm.dag.entryAfter ["setupPersistentLinks"] ''
+    if [ -d /persist ] && [ ! -f /persist/local/bin/agent ]; then
+      echo "Installing Cursor agent..."
+      mkdir -p /persist/local/bin
+      curl -fsSL https://cursor.com/install | bash || true
     fi
   '';
 
@@ -130,6 +145,9 @@
     };
 
     initContent = ''
+      # Add local bin to PATH
+      export PATH="$HOME/.local/bin:$PATH"
+
       # Cyberpunk welcome banner
       if [ -f ~/.config/welcome.sh ]; then
         ~/.config/welcome.sh
